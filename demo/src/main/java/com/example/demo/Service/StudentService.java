@@ -2,6 +2,7 @@ package com.example.demo.Service;
 
 import com.example.demo.Model.Student;
 import com.example.demo.Repository.StudentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @Service
+@Slf4j
 public class StudentService implements IStudentService{
 
     @Autowired
@@ -23,11 +25,12 @@ public class StudentService implements IStudentService{
     @Override
     public ResponseEntity<?> listStudent() {
         try {
+            log.info("Call to Student");
             List<Student> studentList = studentRepository.findAll();
             if(studentList.isEmpty()){
                 return (ResponseEntity<?>) ResponseEntity.EMPTY;
             }else{
-                return ResponseEntity.ok(studentList);
+                return (ResponseEntity<?>) ResponseEntity.ok(studentList);
             }
         }catch (Exception e){
             return (ResponseEntity<?>) ResponseEntity.badRequest();
@@ -40,12 +43,23 @@ public class StudentService implements IStudentService{
         if(student1==null){
             return (ResponseEntity<?>) ResponseEntity.notFound();
         }else{
+            student1.setId(student.getId());
+            student1.setAge(student.getAge());
+            student1.setAddress(student.getAddress());
+            student1.setName(student.getName());
+            student1.setPhoneNumber(student.getPhoneNumber());
             return ResponseEntity.ok(student);
         }
     }
 
     @Override
     public ResponseEntity<?> deleteStudent(@RequestBody int id) {
-        return null;
+        Student student = studentRepository.findById(id).orElse(null);
+        if(student == null){
+            return (ResponseEntity<?>) ResponseEntity.notFound();
+        }else{
+            studentRepository.deleteById(id);
+            return ResponseEntity.ok(id);
+        }
     }
 }
