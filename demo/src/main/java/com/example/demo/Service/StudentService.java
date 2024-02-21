@@ -4,6 +4,7 @@ import com.example.demo.Model.Student;
 import com.example.demo.Repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ public class StudentService implements IStudentService{
     }
 
     @Override
+    @Cacheable("student")
     public ResponseEntity<?> listStudent() {
         try {
             log.info("Call to Student");
