@@ -29,7 +29,7 @@ public class StudentController {
     }
 
     @DeleteMapping("/delete-student")
-    public ResponseEntity<?> deleteStudent(@RequestBody int id){
+    public ResponseEntity<?> deleteStudent(@RequestParam int id){
         return studentService.deleteStudent(id);
     }
 }

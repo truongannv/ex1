@@ -4,6 +4,8 @@ import com.example.demo.Model.Student;
 import com.example.demo.Repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,20 +19,15 @@ public class StudentService implements IStudentService{
 
     @Autowired
     private StudentRepository studentRepository;
-    @Override
-    public ResponseEntity<?> creatStudent(Student student) {
-        studentRepository.save(student);
-        return ResponseEntity.ok(student);
-    }
 
     @Override
-    @Cacheable("student")
+    @Cacheable(value = "student")
     public ResponseEntity<?> listStudent() {
         try {
             log.info("Call to Student");
             List<Student> studentList = studentRepository.findAll();
             if(studentList.isEmpty()){
-                return (ResponseEntity<?>) ResponseEntity.EMPTY;
+                return ResponseEntity.ok().build();
             }else{
                 return (ResponseEntity<?>) ResponseEntity.ok(studentList);
             }
@@ -39,29 +36,38 @@ public class StudentService implements IStudentService{
         }
     }
 
+    @CachePut(value = "student", key = "#student.getId")
+    @Override
+    public ResponseEntity<?> creatStudent(Student student) {
+        studentRepository.save(student);
+        return ResponseEntity.ok(student);
+    }
+
+    @CachePut(value = "student", key = "#student.id")
     @Override
     public ResponseEntity<?> updateStudent(int id, Student student) {
         Student student1 = studentRepository.findById(id).orElse(null);
         if(student1==null){
-            return (ResponseEntity<?>) ResponseEntity.notFound();
+            return ResponseEntity.notFound().build();
         }else{
             student1.setId(student.getId());
             student1.setAge(student.getAge());
             student1.setAddress(student.getAddress());
             student1.setName(student.getName());
             student1.setPhoneNumber(student.getPhoneNumber());
-            return ResponseEntity.ok(student);
+            return (ResponseEntity<?>) ResponseEntity.ok(student);
         }
     }
 
+    @CacheEvict(value = "student", allEntries = true)
     @Override
     public ResponseEntity<?> deleteStudent(@RequestBody int id) {
         Student student = studentRepository.findById(id).orElse(null);
         if(student == null){
-            return (ResponseEntity<?>) ResponseEntity.notFound();
+            return ResponseEntity.notFound().build();
         }else{
             studentRepository.deleteById(id);
-            return ResponseEntity.ok(id);
+            return (ResponseEntity<?>) ResponseEntity.ok(id);
         }
     }
 }
